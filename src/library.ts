@@ -30,12 +30,7 @@ export interface Snapshot {
 
 export class SnapshotUnavailableError extends Error {
   constructor(readonly path: string, readonly cause: unknown) {
-    super(
-      `No Swizzler library snapshot at ${path}.\n\n` +
-        "In Swizzler on your iPhone or iPad, open Settings and turn on " +
-        '"Share with Claude" under Claude Access. The snapshot appears here once ' +
-        "iCloud Drive syncs it, which usually takes under a minute.",
-    );
+    super(`No Swizzler library snapshot at ${path}.`);
     this.name = "SnapshotUnavailableError";
   }
 }

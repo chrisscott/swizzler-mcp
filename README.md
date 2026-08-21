@@ -71,11 +71,19 @@ Set `SWIZZLER_LIBRARY_PATH` to point somewhere else.
 | Tool | What it answers |
 |---|---|
 | `snapshot_status` | How current is this data, and where did it come from? |
+| `diagnose_sync` | Why are recipes missing or stale? Checks iCloud Drive on this Mac. |
 | `search_recipes` | By name, ingredient, spirit, collection, or favourites |
 | `get_recipe` | The full spec for one drink |
 | `list_collections` | Your collections and their sizes |
 | `what_can_i_make` | Given these bottles, what's within reach (and what's missing)? |
 | `recipe_history` | What you've actually made, how often, and how you rated it |
+
+### Smart collections
+
+Smart collections have no stored membership — the app evaluates their rules at query time.
+The snapshot resolves them into concrete memberships before writing, so the rule engine
+stays in Swift rather than being reimplemented here and drifting. Backup exports keep them
+as rules, so re-importing restores a smart collection rather than freezing today's matches.
 
 ## Tests
 

@@ -108,6 +108,7 @@ test("exposes the expected tools", async () => {
   const { tools } = await client.listTools();
   const names = tools.map((tool) => tool.name).sort();
   assert.deepEqual(names, [
+    "diagnose_sync",
     "get_recipe",
     "list_collections",
     "recipe_history",
@@ -231,12 +232,42 @@ test("summarises what has actually been made", async () => {
   await client.close();
 });
 
-test("explains how to enable sharing when no snapshot exists", async () => {
+test("explains why there is no snapshot", async () => {
   const client = await connect(join(workDir, "does-not-exist.swizzle"));
 
   const result = await client.callTool({ name: "search_recipes", arguments: {} });
   assert.equal(result.isError, true);
-  assert.match(textOf(result), /Share with Claude/);
+  const body = textOf(result);
+  assert.match(body, /No Swizzler library snapshot at/);
+  assert.match(body, /does-not-exist\.swizzle/);
+  // Whichever branch fires, it must tell the user somewhere concrete to go.
+  assert.match(body, /iCloud|Share with Claude/);
+
+  await client.close();
+});
+
+test("diagnose_sync reports iCloud Drive state alongside the snapshot", async () => {
+  const path = join(workDir, "fresh.swizzle");
+  writeFileSync(path, JSON.stringify(libraryDocument(new Date().toISOString())));
+  const client = await connect(path);
+
+  const body = textOf(await client.callTool({ name: "diagnose_sync", arguments: {} }));
+  assert.match(body, /iCloud Drive:/);
+  assert.match(body, /Snapshot: found at/);
+  assert.match(body, /Recipes: 3/);
+
+  await client.close();
+});
+
+test("diagnose_sync still answers when the snapshot is missing", async () => {
+  const client = await connect(join(workDir, "absent.swizzle"));
+
+  const result = await client.callTool({ name: "diagnose_sync", arguments: {} });
+  // Diagnosing is the whole job here, so this is a successful answer, not an error.
+  assert.notEqual(result.isError, true);
+  const body = textOf(result);
+  assert.match(body, /iCloud Drive:/);
+  assert.match(body, /No Swizzler library snapshot at/);
 
   await client.close();
 });

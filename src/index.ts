@@ -10,6 +10,7 @@ import {
   describeAge,
   type Snapshot,
 } from "./library.js";
+import { iCloudDriveState, missingSnapshotGuidance } from "./icloud.js";
 import {
   averageRating,
   looselyMatches,
@@ -36,7 +37,9 @@ async function withSnapshot(handler: (snapshot: Snapshot) => string): Promise<To
     const snapshot = await loadSnapshot();
     return text(handler(snapshot) + freshnessNote(snapshot));
   } catch (error) {
-    if (error instanceof SnapshotUnavailableError) return text(error.message, true);
+    if (error instanceof SnapshotUnavailableError) {
+      return text(await missingSnapshotGuidance(error.path), true);
+    }
     throw error;
   }
 }
@@ -83,6 +86,45 @@ server.registerTool(
       }
       return lines.join("\n");
     }),
+);
+
+server.registerTool(
+  "diagnose_sync",
+  {
+    title: "Diagnose sync",
+    description:
+      "Explain why the Swizzler library is missing or not updating, by checking iCloud Drive " +
+      "on this Mac and the state of the snapshot file. Use when recipes are missing or stale.",
+    inputSchema: {},
+  },
+  async () => {
+    const state = await iCloudDriveState();
+    const path = snapshotPath();
+
+    const driveLine = {
+      on: "iCloud Drive: on",
+      off: "iCloud Drive: OFF — nothing syncs to this Mac until you turn it on",
+      "signed-out": "iCloud Drive: this Mac is not signed in to iCloud",
+      unknown: "iCloud Drive: could not determine",
+    }[state];
+
+    try {
+      const snapshot = await loadSnapshot();
+      return text(
+        [
+          driveLine,
+          `Snapshot: found at ${path}`,
+          `Recipes: ${snapshot.library.recipes.length}`,
+          snapshot.stamp ? `Published by: ${snapshot.stamp.deviceModel}` : "No stamp present",
+        ].join("\n") + freshnessNote(snapshot),
+      );
+    } catch (error) {
+      if (error instanceof SnapshotUnavailableError) {
+        return text([driveLine, "", await missingSnapshotGuidance(error.path, state)].join("\n"));
+      }
+      throw error;
+    }
+  },
 );
 
 server.registerTool(
