@@ -88,8 +88,23 @@ covering search, detail rendering, staleness warnings, and the missing-snapshot 
 
 ## Troubleshooting
 
-**"No Swizzler library snapshot at …"** — Sharing isn't on yet, or iCloud Drive hasn't
-synced. Turn on Settings → Claude Access in the app and give it a minute.
+**"No Swizzler library snapshot at …"** — Check three things, in this order:
+
+1. **iCloud Drive is on for this Mac.** System Settings → your name → iCloud → iCloud Drive.
+   If it is off, nothing syncs down at all and `~/Library/Mobile Documents/` will hold only
+   an empty `com~apple~CloudDocs`. To check from a terminal:
+
+   ```bash
+   defaults read MobileMeAccounts | grep -A2 MOBILE_DOCUMENTS
+   ```
+
+   `Enabled = 0` means iCloud Drive is off.
+
+2. **Sharing is on in the app.** Settings → Claude Access → Share with Claude. The status
+   row underneath reports what the last write actually did.
+
+3. **The snapshot has been published since you turned it on.** Background the app to force
+   a write, then give iCloud a minute.
 
 **The Swizzler folder doesn't appear in Finder** — iOS caches the `NSUbiquitousContainers`
 key, so the folder sometimes only shows up after the app's build number changes.
