@@ -47,3 +47,19 @@ test("guidance names the actual problem for each state", async () => {
     assert.match(body, /No Swizzler library snapshot at \/tmp\/x\.swizzle/);
   }
 });
+
+// --- Bundle path resolution ---
+import { resolveConfiguredPath, DEFAULT_SNAPSHOT_PATH } from "../dist/library.js";
+
+test("falls back to the default path for unset or un-substituted config", () => {
+  for (const unset of [undefined, "", "   "]) {
+    assert.equal(resolveConfiguredPath(unset), DEFAULT_SNAPSHOT_PATH);
+  }
+  // A host that leaves an optional placeholder unsubstituted must not send us chasing it.
+  assert.equal(resolveConfiguredPath("${user_config.library_path}"), DEFAULT_SNAPSHOT_PATH);
+});
+
+test("honours a real configured path", () => {
+  assert.equal(resolveConfiguredPath("/tmp/custom.swizzle"), "/tmp/custom.swizzle");
+  assert.equal(resolveConfiguredPath("  /tmp/spaced.swizzle  "), "/tmp/spaced.swizzle");
+});

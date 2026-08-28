@@ -14,7 +14,18 @@ export const DEFAULT_SNAPSHOT_PATH = join(
 );
 
 export function snapshotPath(): string {
-  return process.env.SWIZZLER_LIBRARY_PATH || DEFAULT_SNAPSHOT_PATH;
+  return resolveConfiguredPath(process.env.SWIZZLER_LIBRARY_PATH);
+}
+
+/**
+ * The MCPB spec does not define what an unset optional `user_config` value becomes, so a
+ * host may hand us the un-substituted `${user_config.library_path}` placeholder. Reading a
+ * file by that literal name would fail in a baffling way; treat it as unset instead.
+ */
+export function resolveConfiguredPath(configured: string | undefined): string {
+  const trimmed = configured?.trim();
+  if (!trimmed || trimmed.includes("${")) return DEFAULT_SNAPSHOT_PATH;
+  return trimmed;
 }
 
 /** Past this, tool results carry an explicit warning rather than a quiet age note. */

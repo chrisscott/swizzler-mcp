@@ -31,6 +31,27 @@ opening Swizzler on any device that has synced. So **every tool result states th
 snapshot's age**, and past 24 hours it says so with a warning rather than answering as if
 the data were current. Ask Claude to check `snapshot_status` any time you want to know.
 
+## Install as a bundle (Claude Desktop)
+
+```bash
+npm install
+npm run bundle      # produces swizzler.mcpb
+```
+
+Double-click `swizzler.mcpb` to install it in Claude Desktop — no Node setup, no config
+file editing, and it survives moving the repo.
+
+The bundle ships as a single esbuild-produced file rather than a packed `node_modules`.
+MCPB has no install step on the user's machine, so dependencies have to travel with it,
+and the MCP SDK pulls in express, hono, and jose — HTTP transport code a stdio server
+never touches. Bundling takes it from ~24 MB across 3,500 files to **194 KB in two**.
+
+`npm run test:bundle` runs the full end-to-end suite against the bundled entry point, so
+what ships is what's tested.
+
+To distribute it to anyone else, sign it first (`mcpb sign`); unsigned bundles install
+with a warning.
+
 ## Setup
 
 ```bash
@@ -45,7 +66,8 @@ Then register it with Claude Code:
 claude mcp add swizzler -- node /absolute/path/to/mcp-server/dist/index.js
 ```
 
-Or add it to Claude Desktop's `claude_desktop_config.json`:
+Or, if you would rather not use the bundle, add it to Claude Desktop's
+`claude_desktop_config.json` by hand:
 
 ```json
 {

@@ -15,14 +15,18 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "npm run build && node --test test/*.test.mjs"
+    "test": "npm run build && node --test test/*.test.mjs",
+    "bundle": "node scripts/build-bundle.mjs",
+    "test:bundle": "SWIZZLER_MCP_ENTRY=$PWD/bundle/server/server.js node --test test/server.test.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@anthropic-ai/mcpb": "2.1.2",
     "@types/node": "^22.0.0",
+    "esbuild": "0.28.2",
     "typescript": "^5.6.0"
   }
 }
