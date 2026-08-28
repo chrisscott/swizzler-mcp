@@ -140,10 +140,14 @@ server.registerTool(
       spirit: z.string().optional().describe('Base spirit category, e.g. "gin", "rum"'),
       collection: z.string().optional().describe("Only recipes in this collection"),
       favouritesOnly: z.boolean().optional().describe("Restrict to favourites"),
+      nextRoundOnly: z
+        .boolean()
+        .optional()
+        .describe('Restrict to recipes flagged "Next Round" — the user\'s queue'),
       limit: z.number().int().min(1).max(200).optional().describe("Max results (default 50)"),
     },
   },
-  async ({ query, ingredient, spirit, collection, favouritesOnly, limit }) =>
+  async ({ query, ingredient, spirit, collection, favouritesOnly, nextRoundOnly, limit }) =>
     withSnapshot((snapshot) => {
       const { recipes, memberships } = snapshot.library;
 
@@ -168,6 +172,7 @@ server.registerTool(
         }
         if (inCollection && !inCollection.has(recipe.name.toLowerCase())) return false;
         if (favouritesOnly && !recipe.isFavorite) return false;
+        if (nextRoundOnly && !recipe.isNextRound) return false;
         return true;
       });
 
@@ -205,6 +210,35 @@ server.registerTool(
           : `No recipe called "${name}" in the library.`;
       }
       return renderRecipe(recipe, snapshot.library);
+    }),
+);
+
+server.registerTool(
+  "whats_next",
+  {
+    title: "What's next",
+    description:
+      'Recipes the user has flagged "Next Round" in Swizzler — the queue of drinks they ' +
+      'mean to make next. Use for "what\'s up next", "what am I making next", "what\'s in ' +
+      'my queue".',
+    inputSchema: {
+      limit: z.number().int().min(1).max(100).optional(),
+    },
+  },
+  async ({ limit }) =>
+    withSnapshot((snapshot) => {
+      const queued = snapshot.library.recipes.filter((recipe) => recipe.isNextRound);
+
+      if (queued.length === 0) {
+        return (
+          "Nothing is flagged Next Round right now.\n\n" +
+          "In Swizzler, tap the arrow button on a recipe to queue it up."
+        );
+      }
+
+      const capped = queued.slice(0, limit ?? 25);
+      const header = `${queued.length} recipe${queued.length === 1 ? "" : "s"} queued up next:`;
+      return [header, "", ...capped.map((recipe) => `- ${summariseRecipe(recipe)}`)].join("\n");
     }),
 );
 

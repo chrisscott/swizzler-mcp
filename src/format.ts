@@ -52,6 +52,7 @@ export function summariseRecipe(recipe: TransferRecipe): string {
   const bits: string[] = [];
   if (recipe.spiritCategory) bits.push(recipe.spiritCategory);
   if (recipe.isFavorite) bits.push("favourite");
+  if (recipe.isNextRound) bits.push("next round");
   const made = timesMade(recipe);
   if (made > 0) {
     const rating = averageRating(recipe);
@@ -87,6 +88,8 @@ export function renderRecipe(recipe: TransferRecipe, library: TransferLibrary): 
       lines.push(`${step.stepNumber}. ${step.text}`);
     }
   }
+
+  if (recipe.isNextRound) lines.push("", "Queued in Next Round.");
 
   if (recipe.garnish) lines.push("", `Garnish: ${recipe.garnish}`);
   if (recipe.tips) lines.push("", `Tips: ${recipe.tips}`);

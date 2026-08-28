@@ -43,6 +43,8 @@ export interface TransferRecipe {
   tips?: string | null;
   notes?: string | null;
   isFavorite?: boolean | null;
+  /** "Next Round" — the user's queue of drinks they mean to make next. */
+  isNextRound?: boolean | null;
   history?: TransferHistory[] | null;
 }
 

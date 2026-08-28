@@ -74,6 +74,7 @@ Set `SWIZZLER_LIBRARY_PATH` to point somewhere else.
 | `diagnose_sync` | Why are recipes missing or stale? Checks iCloud Drive on this Mac. |
 | `search_recipes` | By name, ingredient, spirit, collection, or favourites |
 | `get_recipe` | The full spec for one drink |
+| `whats_next` | The Next Round queue — what you've lined up to make |
 | `list_collections` | Your collections and their sizes |
 | `what_can_i_make` | Given these bottles, what's within reach (and what's missing)? |
 | `recipe_history` | What you've actually made, how often, and how you rated it |

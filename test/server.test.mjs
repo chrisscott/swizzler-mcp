@@ -46,6 +46,7 @@ function libraryDocument(exportedAt) {
           id: "22222222-2222-2222-2222-222222222222",
           name: "Negroni",
           spiritCategory: "gin",
+          isNextRound: true,
           ingredients: [
             { name: "Gin", quantity: 1, unit: "oz", sortOrder: 0 },
             { name: "Campari", quantity: 1, unit: "oz", sortOrder: 1 },
@@ -57,6 +58,7 @@ function libraryDocument(exportedAt) {
           id: "33333333-3333-3333-3333-333333333333",
           name: "Margarita",
           spiritCategory: "tequila",
+          isNextRound: true,
           ingredients: [
             { name: "Tequila", quantity: 2, unit: "oz", sortOrder: 0 },
             { name: "Lime Juice", quantity: 1, unit: "oz", sortOrder: 1 },
@@ -115,6 +117,7 @@ test("exposes the expected tools", async () => {
     "search_recipes",
     "snapshot_status",
     "what_can_i_make",
+    "whats_next",
   ]);
 
   await client.close();
@@ -216,6 +219,52 @@ test("finds what can be made from ingredients on hand", async () => {
     }),
   );
   assert.match(nearMiss, /Negroni — missing Sweet Vermouth/);
+
+  await client.close();
+});
+
+test("lists what is queued up next", async () => {
+  const path = join(workDir, "fresh.swizzle");
+  writeFileSync(path, JSON.stringify(libraryDocument(new Date().toISOString())));
+  const client = await connect(path);
+
+  const body = textOf(await client.callTool({ name: "whats_next", arguments: {} }));
+  assert.match(body, /2 recipes queued up next/);
+  assert.match(body, /Negroni/);
+  assert.match(body, /Margarita/);
+  assert.doesNotMatch(body, /Daiquiri/);
+  assert.match(body, /next round/);
+
+  await client.close();
+});
+
+test("search can filter to the Next Round queue", async () => {
+  const path = join(workDir, "fresh.swizzle");
+  writeFileSync(path, JSON.stringify(libraryDocument(new Date().toISOString())));
+  const client = await connect(path);
+
+  const body = textOf(
+    await client.callTool({ name: "search_recipes", arguments: { nextRoundOnly: true, spirit: "gin" } }),
+  );
+  assert.match(body, /Negroni/);
+  assert.doesNotMatch(body, /Margarita/);
+
+  const detail = textOf(await client.callTool({ name: "get_recipe", arguments: { name: "Negroni" } }));
+  assert.match(detail, /Queued in Next Round/);
+
+  await client.close();
+});
+
+test("says so plainly when the queue is empty", async () => {
+  const path = join(workDir, "empty-queue.swizzle");
+  const doc = libraryDocument(new Date().toISOString());
+  for (const recipe of doc.library.recipes) delete recipe.isNextRound;
+  writeFileSync(path, JSON.stringify(doc));
+  const client = await connect(path);
+
+  const body = textOf(await client.callTool({ name: "whats_next", arguments: {} }));
+  assert.match(body, /Nothing is flagged Next Round/);
+  assert.match(body, /tap the arrow button/);
 
   await client.close();
 });
