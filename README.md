@@ -66,6 +66,13 @@ Then register it with Claude Code:
 claude mcp add swizzler -- node /absolute/path/to/mcp-server/dist/index.js
 ```
 
+Once published to npm, that becomes a one-liner needing no checkout at all:
+
+```bash
+claude mcp add swizzler -- npx -y swizzler-mcp
+codex mcp add swizzler -- npx -y swizzler-mcp
+```
+
 Or, if you would rather not use the bundle, add it to Claude Desktop's
 `claude_desktop_config.json` by hand:
 
