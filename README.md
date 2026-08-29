@@ -124,6 +124,27 @@ npm test
 Drives the built server over stdio with a real MCP client against fixture libraries,
 covering search, detail rendering, staleness warnings, and the missing-snapshot path.
 
+## Releasing
+
+Tagged `mcp-server-v*` (deliberately not `v*` — those are the iOS app's App Store tags),
+`.github/workflows/release-mcp-server.yml` builds the bundle, runs the suite against the
+server unpacked back out of the packed `.mcpb`, attaches it to a GitHub release, and
+publishes to npm.
+
+```bash
+# bump the version in BOTH package.json and manifest.json first — the workflow
+# fails the build if they disagree with the tag
+git tag mcp-server-v0.2.0 && git push --tags
+```
+
+npm publishing uses OIDC trusted publishing, so there is no token in the repo. It needs
+one-time setup on npmjs.com under the package's Settings → Trusted Publisher: repository
+`chrisscott/swizzler`, workflow `release-mcp-server.yml`. That can only be configured for
+a package that already exists, so the very first publish has to be done by hand.
+
+`workflow_dispatch` runs the same build and tests without publishing, which is the way to
+check the pipeline before tagging.
+
 ## Troubleshooting
 
 **"No Swizzler library snapshot at …"** — Check three things, in this order:
