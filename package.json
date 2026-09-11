@@ -34,8 +34,5 @@
     "type": "git",
     "url": "git+https://github.com/chrisscott/swizzler.git",
     "directory": "mcp-server"
-  },
-  "os": [
-    "darwin"
-  ]
+  }
 }
