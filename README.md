@@ -10,7 +10,7 @@ Read-only. Nothing here can change your library.
 
 Swizzler stores recipes on-device in SwiftData, synced through your private CloudKit
 database. Neither of those is reachable from a desktop MCP server, so the app publishes a
-snapshot instead: turn on **Settings → Claude Access → Share with Claude**, and Swizzler
+snapshot instead: turn on **Settings → AI Assistants → Share Library**, and Swizzler
 writes a photo-free copy of your library to its own iCloud Drive folder. This server reads
 that file from your Mac.
 
@@ -159,7 +159,7 @@ check the pipeline before tagging.
 
    `Enabled = 0` means iCloud Drive is off.
 
-2. **Sharing is on in the app.** Settings → Claude Access → Share with Claude. The status
+2. **Sharing is on in the app.** Settings → AI Assistants → Share Library. The status
    row underneath reports what the last write actually did.
 
 3. **The snapshot has been published since you turned it on.** Background the app to force

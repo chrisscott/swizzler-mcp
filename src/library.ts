@@ -4,7 +4,7 @@ import { join } from "node:path";
 import type { SnapshotStamp, SwizzleDocument, TransferLibrary } from "./types.js";
 
 /**
- * The app publishes here once "Share with Claude" is enabled. The container name comes
+ * The app publishes here once "Share Library" is enabled. The container name comes
  * from the iCloud container id with dots replaced by tildes, which is how iCloud Drive
  * exposes an app's Documents folder on the Mac.
  */

@@ -293,7 +293,7 @@ test("explains why there is no snapshot", async () => {
   assert.match(body, /No Swizzler library snapshot at/);
   assert.match(body, /does-not-exist\.swizzle/);
   // Whichever branch fires, it must tell the user somewhere concrete to go.
-  assert.match(body, /iCloud|Share with Claude/);
+  assert.match(body, /iCloud|Share Library/);
 
   await client.close();
 });

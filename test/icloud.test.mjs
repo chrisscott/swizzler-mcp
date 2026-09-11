@@ -40,7 +40,7 @@ test("guidance names the actual problem for each state", async () => {
   assert.match(signedOut, /not signed in to iCloud/);
 
   const on = await missingSnapshotGuidance("/tmp/x.swizzle", "on");
-  assert.match(on, /Share with Claude/);
+  assert.match(on, /Share Library/);
   assert.doesNotMatch(on, /turned off on this Mac/);
 
   for (const body of [off, signedOut, on]) {

@@ -79,7 +79,7 @@ export async function missingSnapshotGuidance(
         "iCloud Drive is turned off on this Mac, so nothing syncs down from Swizzler at all.",
         "",
         "Turn it on in System Settings > [your name] > iCloud > iCloud Drive. Then open",
-        'Swizzler on your iPhone, check Settings > Claude Access > "Share with Claude" is on,',
+        'Swizzler on your iPhone, check Settings > AI Assistants > "Share Library" is on,',
         "and background the app to republish.",
       );
       break;
@@ -95,8 +95,8 @@ export async function missingSnapshotGuidance(
 
     default:
       lines.push(
-        'In Swizzler on your iPhone or iPad, open Settings and turn on "Share with Claude"',
-        "under Claude Access. The status row there reports what the last publish did.",
+        'In Swizzler on your iPhone or iPad, open Settings and turn on "Share Library"',
+        "under AI Assistants. The status row there reports what the last publish did.",
         "",
         "If it is already on, background the app to force a publish and give iCloud a minute.",
       );
