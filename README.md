@@ -35,58 +35,48 @@ opening Swizzler on any device that has synced. So **every tool result states th
 snapshot's age**, and past 24 hours it says so with a warning rather than answering as if
 the data were current. Ask Claude to check `snapshot_status` any time you want to know.
 
-## Install as a bundle (Claude Desktop)
+## Install
 
-```bash
-npm install
-npm run bundle      # produces swizzler.mcpb
-```
+One command, the same for every client. It runs straight from npm — nothing to download,
+build, or keep up to date.
 
-Double-click `swizzler.mcpb` to install it in Claude Desktop — no Node setup, no config
-file editing, and it survives moving the repo.
-
-The bundle ships as a single esbuild-produced file rather than a packed `node_modules`.
-MCPB has no install step on the user's machine, so dependencies have to travel with it,
-and the MCP SDK pulls in express, hono, and jose — HTTP transport code a stdio server
-never touches. Bundling takes it from ~24 MB across 3,500 files to **194 KB in two**.
-
-`npm run test:bundle` runs the full end-to-end suite against the bundled entry point, so
-what ships is what's tested.
-
-To distribute it to anyone else, sign it first (`mcpb sign`); unsigned bundles install
-with a warning.
-
-## Setup
-
-The published package needs no checkout at all:
+**Claude Code**
 
 ```bash
 claude mcp add swizzler -- npx -y swizzler-mcp
+```
+
+**Codex**
+
+```bash
 codex mcp add swizzler -- npx -y swizzler-mcp
 ```
 
-To run it from a clone instead:
+**Claude Desktop** — add this to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "swizzler": {
+      "command": "npx",
+      "args": ["-y", "swizzler-mcp"]
+    }
+  }
+}
+```
+
+**Anything else that speaks MCP** — run `npx -y swizzler-mcp` over stdio.
+
+Node 20 or newer is the only requirement, and `npx` ships with it.
+
+### From a clone
 
 ```bash
 git clone https://github.com/chrisscott/swizzler-mcp.git
 cd swizzler-mcp
 npm install
 npm run build
-claude mcp add swizzler -- node /absolute/path/to/swizzler-mcp/dist/index.js
-```
-
-Or, if you would rather not use the bundle, add it to Claude Desktop's
-`claude_desktop_config.json` by hand:
-
-```json
-{
-  "mcpServers": {
-    "swizzler": {
-      "command": "node",
-      "args": ["/absolute/path/to/swizzler-mcp/dist/index.js"]
-    }
-  }
-}
+claude mcp add swizzler -- node "$PWD/dist/index.js"
 ```
 
 By default it reads:
@@ -128,13 +118,12 @@ covering search, detail rendering, staleness warnings, and the missing-snapshot 
 
 ## Releasing
 
-On a `v*` tag, `.github/workflows/release.yml` builds the bundle, runs the suite against
-the server unpacked back out of the packed `.mcpb`, attaches it to a GitHub release, and
-publishes to npm.
+On a `v*` tag, `.github/workflows/release.yml` runs the suite, creates a GitHub release,
+and publishes to npm. npm is the only distribution channel — there is no download.
 
 ```bash
-# bump the version in BOTH package.json and manifest.json first — the workflow
-# fails the build if they disagree with the tag
+# bump the version in package.json first — the workflow fails the build if it
+# disagrees with the tag
 git tag v0.2.0 && git push --tags
 ```
 
@@ -142,6 +131,9 @@ npm publishing uses OIDC trusted publishing, so there is no token in the repo. I
 one-time setup on npmjs.com under the package's Settings → Trusted Publisher: repository
 `chrisscott/swizzler-mcp`, workflow `release.yml`. That can only be configured for a
 package that already exists, so the very first publish has to be done by hand.
+
+A version already on the registry is skipped rather than failing the run, so re-running a
+release is safe.
 
 `workflow_dispatch` runs the same build and tests without publishing, which is the way to
 check the pipeline before tagging.

@@ -7,10 +7,7 @@ import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
-// Overridable so the same suite can verify the esbuild bundle that ships in the .mcpb,
-// not just the plain tsc output.
-const serverPath =
-  process.env.SWIZZLER_MCP_ENTRY ?? fileURLToPath(new URL("../dist/index.js", import.meta.url));
+const serverPath = fileURLToPath(new URL("../dist/index.js", import.meta.url));
 let workDir;
 
 function libraryDocument(exportedAt) {

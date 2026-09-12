@@ -36,42 +36,27 @@ jobs:
 
       - run: npm ci
 
-      - name: Check the tag, package.json and manifest.json agree
+      - name: Check the tag and package.json agree
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           tag="${GITHUB_REF_NAME#v}"
           pkg="$(node -p "require('./package.json').version")"
-          manifest="$(node -p "require('./manifest.json').version")"
-          echo "tag=$tag package.json=$pkg manifest.json=$manifest"
-          if [ "$tag" != "$pkg" ] || [ "$tag" != "$manifest" ]; then
-            echo "::error::Version mismatch between the tag, package.json and manifest.json"
+          echo "tag=$tag package.json=$pkg"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::Version mismatch between the tag and package.json"
             exit 1
           fi
 
       - name: Test
         run: npm test
 
-      - name: Build the .mcpb bundle
-        run: npm run bundle
-
-      - name: Test the server unpacked from the packed bundle
-        # Guards against a bundle that packs cleanly but cannot actually run — what
-        # ships is what gets tested, not just the staging directory.
-        run: |
-          ./node_modules/.bin/mcpb unpack swizzler.mcpb unpacked
-          SWIZZLER_MCP_ENTRY="$PWD/unpacked/server/server.js" \
-            node --test test/server.test.mjs
-
-      - name: Attach the bundle to the release
+      - name: Create the release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: swizzler.mcpb
           generate_release_notes: true
           body: |
-            Install for Claude Desktop by downloading `swizzler.mcpb` below and opening it.
-
-            For Claude Code or Codex:
+            Install with npx — no download, and it works the same for every client:
 
             ```bash
             claude mcp add swizzler -- npx -y swizzler-mcp
