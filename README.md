@@ -1,10 +1,14 @@
 # swizzler-mcp
 
-An MCP server that lets Claude read your Swizzler cocktail library — search recipes,
-pull up a spec, work out what you can make from the bottles on your shelf, and look at
-what you've actually been drinking.
+An MCP server that lets an AI assistant read your Swizzler cocktail library — search
+recipes, pull up a spec, work out what you can make from the bottles on your shelf, and
+look at what you've actually been drinking. Works with Claude, Codex, and other
+MCP-compatible clients.
 
 Read-only. Nothing here can change your library.
+
+The iOS app is closed source; this server is not. It is the piece that runs on your own
+Mac and touches your recipe data, so it is the piece worth being able to read.
 
 ## How it works
 
@@ -54,23 +58,21 @@ with a warning.
 
 ## Setup
 
-```bash
-cd mcp-server
-npm install
-npm run build
-```
-
-Then register it with Claude Code:
-
-```bash
-claude mcp add swizzler -- node /absolute/path/to/mcp-server/dist/index.js
-```
-
-Once published to npm, that becomes a one-liner needing no checkout at all:
+The published package needs no checkout at all:
 
 ```bash
 claude mcp add swizzler -- npx -y swizzler-mcp
 codex mcp add swizzler -- npx -y swizzler-mcp
+```
+
+To run it from a clone instead:
+
+```bash
+git clone https://github.com/chrisscott/swizzler-mcp.git
+cd swizzler-mcp
+npm install
+npm run build
+claude mcp add swizzler -- node /absolute/path/to/swizzler-mcp/dist/index.js
 ```
 
 Or, if you would rather not use the bundle, add it to Claude Desktop's
@@ -81,7 +83,7 @@ Or, if you would rather not use the bundle, add it to Claude Desktop's
   "mcpServers": {
     "swizzler": {
       "command": "node",
-      "args": ["/absolute/path/to/mcp-server/dist/index.js"]
+      "args": ["/absolute/path/to/swizzler-mcp/dist/index.js"]
     }
   }
 }
@@ -126,21 +128,20 @@ covering search, detail rendering, staleness warnings, and the missing-snapshot 
 
 ## Releasing
 
-Tagged `mcp-server-v*` (deliberately not `v*` — those are the iOS app's App Store tags),
-`.github/workflows/release-mcp-server.yml` builds the bundle, runs the suite against the
-server unpacked back out of the packed `.mcpb`, attaches it to a GitHub release, and
+On a `v*` tag, `.github/workflows/release.yml` builds the bundle, runs the suite against
+the server unpacked back out of the packed `.mcpb`, attaches it to a GitHub release, and
 publishes to npm.
 
 ```bash
 # bump the version in BOTH package.json and manifest.json first — the workflow
 # fails the build if they disagree with the tag
-git tag mcp-server-v0.2.0 && git push --tags
+git tag v0.2.0 && git push --tags
 ```
 
 npm publishing uses OIDC trusted publishing, so there is no token in the repo. It needs
 one-time setup on npmjs.com under the package's Settings → Trusted Publisher: repository
-`chrisscott/swizzler`, workflow `release-mcp-server.yml`. That can only be configured for
-a package that already exists, so the very first publish has to be done by hand.
+`chrisscott/swizzler-mcp`, workflow `release.yml`. That can only be configured for a
+package that already exists, so the very first publish has to be done by hand.
 
 `workflow_dispatch` runs the same build and tests without publishing, which is the way to
 check the pipeline before tagging.

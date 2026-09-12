@@ -2,6 +2,8 @@
   "name": "swizzler-mcp",
   "version": "0.1.0",
   "description": "Read your Swizzler cocktail library from Claude",
+  "license": "MIT",
+  "author": "Chris Scott",
   "type": "module",
   "bin": {
     "swizzler-mcp": "dist/index.js"
@@ -30,9 +32,18 @@
     "esbuild": "0.28.2",
     "typescript": "^5.6.0"
   },
+  "keywords": [
+    "mcp",
+    "modelcontextprotocol",
+    "cocktails",
+    "recipes",
+    "swizzler",
+    "icloud"
+  ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chrisscott/swizzler.git",
-    "directory": "mcp-server"
-  }
+    "url": "git+https://github.com/chrisscott/swizzler-mcp.git"
+  },
+  "homepage": "https://github.com/chrisscott/swizzler-mcp#readme",
+  "bugs": "https://github.com/chrisscott/swizzler-mcp/issues"
 }

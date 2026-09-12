@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      publish_npm:
+        description: "Publish to npm (off = build and test only)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # create the release and upload the .mcpb
+  id-token: write # npm OIDC trusted publishing
+
+jobs:
+  release:
+    # macOS is where this actually runs: the default snapshot path is an iCloud Drive
+    # container, and the iCloud Drive check reads macOS preferences. The server still
+    # degrades gracefully elsewhere given an explicit SWIZZLER_LIBRARY_PATH, so this is
+    # about testing the real platform rather than a hard requirement.
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Ensure npm supports OIDC trusted publishing
+        run: npm install -g npm@latest # needs >= 11.5.1
+
+      - run: npm ci
+
+      - name: Check the tag, package.json and manifest.json agree
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          manifest="$(node -p "require('./manifest.json').version")"
+          echo "tag=$tag package.json=$pkg manifest.json=$manifest"
+          if [ "$tag" != "$pkg" ] || [ "$tag" != "$manifest" ]; then
+            echo "::error::Version mismatch between the tag, package.json and manifest.json"
+            exit 1
+          fi
+
+      - name: Test
+        run: npm test
+
+      - name: Build the .mcpb bundle
+        run: npm run bundle
+
+      - name: Test the server unpacked from the packed bundle
+        # Guards against a bundle that packs cleanly but cannot actually run — what
+        # ships is what gets tested, not just the staging directory.
+        run: |
+          ./node_modules/.bin/mcpb unpack swizzler.mcpb unpacked
+          SWIZZLER_MCP_ENTRY="$PWD/unpacked/server/server.js" \
+            node --test test/server.test.mjs
+
+      - name: Attach the bundle to the release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: swizzler.mcpb
+          generate_release_notes: true
+          body: |
+            Install for Claude Desktop by downloading `swizzler.mcpb` below and opening it.
+
+            For Claude Code or Codex:
+
+            ```bash
+            claude mcp add swizzler -- npx -y swizzler-mcp
+            codex mcp add swizzler -- npx -y swizzler-mcp
+            ```
+
+            Requires Swizzler on iOS with Settings → AI Assistants → Share Library
+            enabled, and iCloud Drive turned on for this Mac.
+
+      - name: Publish to npm
+        # No NPM_TOKEN: trusted publishing uses the OIDC id-token above, and provenance
+        # is attached automatically.
+        if: startsWith(github.ref, 'refs/tags/') || inputs.publish_npm
+        run: npm publish
