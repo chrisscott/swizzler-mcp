@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readFileSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -20,7 +21,14 @@ import {
 } from "./format.js";
 import type { TransferRecipe } from "./types.js";
 
-const server = new McpServer({ name: "swizzler", version: "0.1.0" });
+// Read from package.json rather than repeating the number here: a hardcoded version
+// silently drifts at the first release that forgets it, and this one is what clients
+// report back to the user during the MCP handshake.
+const { version } = JSON.parse(
+  readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+) as { version: string };
+
+const server = new McpServer({ name: "swizzler", version });
 
 type ToolResult = { content: Array<{ type: "text"; text: string }>; isError?: boolean };
 
