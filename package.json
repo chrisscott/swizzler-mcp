@@ -1,6 +1,6 @@
 {
   "name": "swizzler-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Read your Swizzler cocktail library from Claude, Codex, and other MCP clients",
   "license": "MIT",
   "author": "Chris Scott",
