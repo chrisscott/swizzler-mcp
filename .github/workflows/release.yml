@@ -85,4 +85,14 @@ jobs:
         # No NPM_TOKEN: trusted publishing uses the OIDC id-token above, and provenance
         # is attached automatically.
         if: startsWith(github.ref, 'refs/tags/') || inputs.publish_npm
-        run: npm publish
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          # A version already on the registry is not an error worth failing a release
+          # over: the first publish was manual, and re-running a release should be safe.
+          # The GitHub release is attached in the step above, so skipping here still
+          # leaves the tag with its bundle.
+          if npm view "swizzler-mcp@$version" version >/dev/null 2>&1; then
+            echo "swizzler-mcp@$version is already published — skipping."
+            exit 0
+          fi
+          npm publish
